@@ -1855,6 +1855,10 @@ def reveal_in_file_manager(path: Path) -> str:
     return "file manager"
 
 
+def is_loopback_host(host: str) -> bool:
+    return host in {"127.0.0.1", "localhost", "::1"}
+
+
 def is_protected_delete_path(path: Path) -> bool:
     """Reject broad user/system containers; delete their specific children instead."""
     home = Path.home().absolute()
@@ -2057,6 +2061,9 @@ def run_scan(args: argparse.Namespace) -> int:
 
 
 def run_serve(args: argparse.Namespace) -> int:
+    if not is_loopback_host(args.host):
+        print("Refusing to enable cleanup actions on a non-local host. Use 127.0.0.1 or localhost.", file=sys.stderr)
+        return 2
     data_path = Path(args.data).expanduser().absolute()
     report_path = Path(args.report).expanduser().absolute() if args.report else data_path.with_suffix(".html")
     payload = json.loads(data_path.read_text(encoding="utf-8"))
@@ -2115,7 +2122,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve = subparsers.add_parser("serve", help="Serve a report locally and enable one-click deletion for scanned paths.")
     serve.add_argument("--data", required=True, help="Scan JSON produced by the scan command.")
     serve.add_argument("--report", help="HTML report to serve. Defaults to the JSON path with .html suffix.")
-    serve.add_argument("--host", default="127.0.0.1", help="Bind host. Keep 127.0.0.1 unless there is a specific reason.")
+    serve.add_argument("--host", default="127.0.0.1", help="Bind host. Only 127.0.0.1, localhost, and ::1 are allowed.")
     serve.add_argument("--port", type=int, default=8765, help="Bind port. Use 0 to auto-select a free port.")
     serve.add_argument("--open", action="store_true", help="Open the report URL in the default browser.")
     serve.set_defaults(func=run_serve)
