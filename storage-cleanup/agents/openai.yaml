@@ -1,0 +1,7 @@
+interface:
+  display_name: "Storage Cleanup"
+  short_description: "Read-only disk analysis reports"
+  icon_small: "./assets/storage-cleanup.svg"
+  icon_large: "./assets/storage-cleanup.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use $storage-cleanup to analyze my computer storage and generate a safe cleanup report."
